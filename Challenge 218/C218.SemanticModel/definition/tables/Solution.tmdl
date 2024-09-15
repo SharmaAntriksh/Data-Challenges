@@ -1,0 +1,67 @@
+table Solution
+	lineageTag: 55db91f7-12f3-4aea-a6d4-5a60b4a60a67
+
+	column Project
+		dataType: string
+		lineageTag: f78a6565-cf7a-4db8-ab08-f28020feb289
+		summarizeBy: none
+		sourceColumn: Project
+
+		annotation SummarizationSetBy = Automatic
+
+	column CompletedTasks
+		dataType: string
+		lineageTag: afaa0f78-599f-47fb-849e-fdf282df3e4d
+		summarizeBy: none
+		sourceColumn: CompletedTasks
+
+		annotation SummarizationSetBy = Automatic
+
+	column UncompletedTasks
+		dataType: string
+		lineageTag: 21ab31b7-abdf-46bd-8014-c02f7880cd67
+		summarizeBy: none
+		sourceColumn: UncompletedTasks
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution = m
+		mode: import
+		source =
+				let
+				    Source = Raw,
+				    GroupedRows = Table.Group (
+				        Source,
+				        { "Project" },
+				        {
+				            {
+				                "Count",
+				                each
+				                    let
+				                        Raw = _,
+				                        CompletedTasks = Table.SelectRows ( Raw, each [Completion Date] is date ),
+				                        UncompletedTasks = Table.SelectRows ( Raw, each [Completion Date] is null ),
+				                        Result = { { Text.Combine ( CompletedTasks[Tasks], ", " ) } }
+				                            & { { Text.Combine ( UncompletedTasks[Tasks], ", " ) } }
+				                    in
+				                        Table.FromColumns (
+				                            Result,
+				                            type table [ CompletedTasks = text, UncompletedTasks = text ]
+				                        ),
+				                type table [ CompletedTasks = text, UncompletedTasks = text ]
+				            }
+				        }
+				    ),
+				    ExpandedCount = Table.ExpandTableColumn (
+				        GroupedRows,
+				        "Count",
+				        { "CompletedTasks", "UncompletedTasks" },
+				        { "CompletedTasks", "UncompletedTasks" }
+				    )
+				in
+				    ExpandedCount
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
