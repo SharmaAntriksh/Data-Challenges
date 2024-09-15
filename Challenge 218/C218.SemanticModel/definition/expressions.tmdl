@@ -1,0 +1,12 @@
+expression Raw =
+		let
+		    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("bdA9CoAwDAXgu3Q2kFZBHW1zAAc3cVKRLi34c38LYrTWLbwHX9r0vWhEJmje7OLCICvAChSqQgzZ1Rk/WbeEARVgHXfdvO1XyVG7+ukYd+vdner3Ak6YlQUEmVmdsvqXNQlr3iwnH8z8YpRgFH1dApbPGylicxndjL4LQsl3G04=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Project = _t, Tasks = _t, #"Completion Date" = _t]),
+		    #"Changed Type with Locale" = Table.TransformColumnTypes(Source, {{"Project", type text},{"Tasks", type text}, {"Completion Date", type date}}, "en-GB")
+		in
+		    #"Changed Type with Locale"
+	lineageTag: 0681755a-d250-498e-93ff-2b5194efe985
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
