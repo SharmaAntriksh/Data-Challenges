@@ -1,0 +1,109 @@
+table Solution1
+	lineageTag: 96a12a86-175b-401e-8070-bdd6f7f0e79c
+
+	column Name
+		dataType: string
+		lineageTag: d2c1d50a-0deb-47de-a133-cc3d3e7fb167
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data
+		dataType: string
+		lineageTag: 9ecab0e2-1632-41a2-a402-dbc38dc83fb2
+		summarizeBy: none
+		sourceColumn: Data
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value
+		dataType: int64
+		formatString: 0
+		lineageTag: af24a796-f280-47d4-bf5a-935ccfde94da
+		summarizeBy: sum
+		sourceColumn: Value
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: ffa4f645-4a00-472c-b84d-85998a1d34b2
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition Solution1 = m
+		mode: import
+		source = ```
+				let
+				    Source = Raw,
+				    Transform = Table.TransformColumns (
+				        Source,
+				        { "Column1", each try Date.FromText ( _ ) otherwise _, type text }
+				    ),
+				    GroupedRows = Table.Group (
+				        Transform,
+				        "Column1",
+				        {
+				            {
+				                "T",
+				                each
+				                    let
+				                        T = _,
+				                        Date = T[Column1]{0},
+				                        Transform = 
+				                            Table.TransformColumns (
+				                                T,
+				                                {
+				                                    "Column1",
+				                                    each
+				                                        if ( try Date.FromText ( _ ) otherwise _ ) is date then "Name"
+				                                        else  _
+				                                }
+				                            ),
+				                        Promote = 
+				                            Table.PromoteHeaders ( Transform ),
+				                        Unpivot = 
+				                            Table.UnpivotOtherColumns ( Promote, { "Name" }, "Data", "Value" ),
+				                        RemoveBlanks = 
+				                            Table.SelectRows ( Unpivot, each [Value] <> "" ),
+				                        RepeatDate = 
+				                            List.Repeat ( { Date }, Table.RowCount ( RemoveBlanks ) ),
+				                        Combined = 
+				                            Table.FromColumns (
+				                                { RepeatDate } & Table.ToColumns ( RemoveBlanks ),
+				                                type table [ Date = date, Name = text, Data = text, Value = Int64.Type ]
+				                            ),
+				                        TransformDataType = 
+				                            Table.TransformColumnTypes (
+				                                Combined,
+				                                { { "Value", Int64.Type } }
+				                            )
+				                    in
+				                        TransformDataType,
+				                type table [ Date = date, Name = text, Data = text, Value = Int64.Type ]
+				            }
+				        },
+				        GroupKind.Local,
+				        ( x, y ) => Number.From ( Type.Is ( Value.Type ( y ), Date.Type ) )
+				    ),
+				    ExpandedT = Table.ExpandTableColumn (
+				        GroupedRows,
+				        "T",
+				        { "Date", "Name", "Data", "Value" },
+				        { "Date", "Name", "Data", "Value" }
+				    ),
+				    RemovedColumns = Table.RemoveColumns ( ExpandedT, { "Column1" } )
+				in
+				    RemovedColumns
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
