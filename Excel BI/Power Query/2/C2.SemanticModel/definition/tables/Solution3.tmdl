@@ -1,0 +1,41 @@
+table Solution3
+	lineageTag: 8b16dfb5-74fd-4a6d-8c5f-6bc7ba0309e7
+
+	column Alpha
+		dataType: string
+		lineageTag: 2f044194-802b-4a91-b635-a7117c6189fd
+		summarizeBy: none
+		sourceColumn: Alpha
+
+		annotation SummarizationSetBy = Automatic
+
+	column Number
+		dataType: int64
+		formatString: 0
+		lineageTag: b260db84-6e84-4c7b-be55-61e1d98445a5
+		summarizeBy: sum
+		sourceColumn: Number
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution3 = m
+		mode: import
+		source = ```
+				let
+				    Source = RawData,
+				    UnpivotedOtherColumns = Table.UnpivotOtherColumns ( Source, {}, "Attribute", "Value" )[Value],
+				    ChangeType = List.Transform ( UnpivotedOtherColumns, each try Number.From ( _ ) otherwise _ ),
+				    Separate = List.Accumulate ( ChangeType, [A = {}, D = {}], (state, current) => 
+				if Value.Is ( Value.FromText ( current ), Int64.Type ) 
+				then state & [D = state[D]&{current}]
+				else state & [A = state[A]&{current}]
+				),
+				    Result = Table.FromColumns ( {Separate[A]} & {Separate[D]}, type table [Alpha = text, Number = Int64.Type] )
+				in
+				    Result
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

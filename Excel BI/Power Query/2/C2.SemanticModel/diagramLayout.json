@@ -11,7 +11,7 @@
         {
           "location": {
             "x": 284,
-            "y": 36
+            "y": 42
           },
           "nodeIndex": "Solution1",
           "nodeLineageTag": "1e16f1ea-4928-452d-ad7d-10c2ff37009b",
@@ -24,10 +24,23 @@
         {
           "location": {
             "x": 284,
-            "y": 12
+            "y": 18
           },
           "nodeIndex": "Solution2",
           "nodeLineageTag": "931f7867-a5a1-492d-95e1-5b570855b5b2",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 284,
+            "y": 18
+          },
+          "nodeIndex": "Solution3",
+          "nodeLineageTag": "8b16dfb5-74fd-4a6d-8c5f-6bc7ba0309e7",
           "size": {
             "height": 128,
             "width": 234
