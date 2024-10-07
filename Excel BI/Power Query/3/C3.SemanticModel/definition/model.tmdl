@@ -10,11 +10,12 @@ annotation __PBI_TimeIntelligenceEnabled = 0
 
 annotation PBIDesktopVersion = 2.132.1053.0 (24.08)
 
-annotation PBI_QueryOrder = ["Raw","Solution1"]
+annotation PBI_QueryOrder = ["Raw","Solution1","Solution2"]
 
 annotation PBI_ProTooling = ["DevMode"]
 
 ref table Solution1
+ref table Solution2
 
 ref cultureInfo en-US
 

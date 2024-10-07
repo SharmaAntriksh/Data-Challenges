@@ -1,0 +1,74 @@
+table Solution2
+	lineageTag: 6e1ab7b2-0668-4f8d-b3ff-84c3d5e7ad52
+
+	column A
+		dataType: string
+		lineageTag: 24aa5445-d5fd-4faf-888d-50163b763920
+		summarizeBy: none
+		sourceColumn: A
+
+		annotation SummarizationSetBy = Automatic
+
+	column B
+		dataType: string
+		lineageTag: 47f33145-8e16-4a71-b977-1922366aa964
+		summarizeBy: none
+		sourceColumn: B
+
+		annotation SummarizationSetBy = Automatic
+
+	column C
+		dataType: string
+		lineageTag: d1696c91-20ff-4e50-ad5c-ce1645fd57f0
+		summarizeBy: none
+		sourceColumn: C
+
+		annotation SummarizationSetBy = Automatic
+
+	column D
+		dataType: string
+		lineageTag: b2e2908c-4d02-4fb3-80f0-71df0025f32a
+		summarizeBy: none
+		sourceColumn: D
+
+		annotation SummarizationSetBy = Automatic
+
+	column E
+		dataType: string
+		lineageTag: 649cd8e0-3135-4475-b94c-bb2aa370e545
+		summarizeBy: none
+		sourceColumn: E
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution2 = m
+		mode: import
+		source = ```
+				let
+				    Source = 
+				        Raw,
+				    SortedRows = 
+				        List.Sort ( 
+				            List.Distinct ( Source[Alphabets] ), 
+				            Order.Ascending 
+				        ),
+				    Transformation = 
+				        List.Accumulate (
+				            SortedRows,
+				            {},
+				            ( state, current ) =>
+				                state 
+				                & Table.ToColumns ( 
+				                    Table.SelectRows ( Source, each [Alphabets] = current ) 
+				                )
+				        ),
+				    Result = 
+				        Table.FromColumns ( Transformation, SortedRows )
+				in
+				    Result
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
