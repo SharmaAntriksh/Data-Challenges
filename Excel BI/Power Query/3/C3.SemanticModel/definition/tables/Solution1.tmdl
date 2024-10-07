@@ -1,0 +1,59 @@
+table Solution1
+	lineageTag: 3fc02611-728a-403f-b342-148018043f9c
+
+	column A
+		dataType: string
+		lineageTag: 5ffdcea7-734a-4da6-aab4-749808e62c9d
+		summarizeBy: none
+		sourceColumn: A
+
+		annotation SummarizationSetBy = Automatic
+
+	column B
+		dataType: string
+		lineageTag: f262da9e-25db-4809-8168-459dcfd8db86
+		summarizeBy: none
+		sourceColumn: B
+
+		annotation SummarizationSetBy = Automatic
+
+	column C
+		dataType: string
+		lineageTag: 923b8f73-07e3-4f69-8271-76ae71797097
+		summarizeBy: none
+		sourceColumn: C
+
+		annotation SummarizationSetBy = Automatic
+
+	column D
+		dataType: string
+		lineageTag: 83671aaa-c42c-4afb-9864-1e0c7193c76c
+		summarizeBy: none
+		sourceColumn: D
+
+		annotation SummarizationSetBy = Automatic
+
+	column E
+		dataType: string
+		lineageTag: d89c6f93-7cce-40b4-8fcf-8b386e57ebeb
+		summarizeBy: none
+		sourceColumn: E
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution1 = m
+		mode: import
+		source =
+				let
+				    Source = Raw,
+				    DistinctSort = List.Sort ( List.Distinct ( Source[Alphabets] ) ),
+				    Transformation = List.Transform ( DistinctSort, each {_} & List.Repeat ( {_}, List.Count ( List.PositionOf ( Source[Alphabets], _, Occurrence.All, Comparer.OrdinalIgnoreCase ) ) ) ),
+				    DataTypes = List.Transform ( DistinctSort, each { _, Value.Type ( _ ) } ),
+				    Result = Table.TransformColumnTypes ( Table.PromoteHeaders ( Table.FromColumns ( Transformation ) ), DataTypes )
+				in
+				    Result
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
