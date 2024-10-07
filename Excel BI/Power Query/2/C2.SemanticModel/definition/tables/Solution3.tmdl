@@ -23,14 +23,24 @@ table Solution3
 		source = ```
 				let
 				    Source = RawData,
-				    UnpivotedOtherColumns = Table.UnpivotOtherColumns ( Source, {}, "Attribute", "Value" )[Value],
-				    ChangeType = List.Transform ( UnpivotedOtherColumns, each try Number.From ( _ ) otherwise _ ),
-				    Separate = List.Accumulate ( ChangeType, [A = {}, D = {}], (state, current) => 
-				if Value.Is ( Value.FromText ( current ), Int64.Type ) 
-				then state & [D = state[D]&{current}]
-				else state & [A = state[A]&{current}]
-				),
-				    Result = Table.FromColumns ( {Separate[A]} & {Separate[D]}, type table [Alpha = text, Number = Int64.Type] )
+				    UnpivotedOtherColumns = 
+				        Table.UnpivotOtherColumns ( Source, {}, "Attribute", "Value" )[Value],
+				    ChangeType = 
+				        List.Transform ( UnpivotedOtherColumns, each try Number.From ( _ ) otherwise _ ),
+				    Separate = 
+				        List.Accumulate (
+				            ChangeType,
+				            [ A = {}, D = {} ],
+				            ( state, current ) =>
+				                if Value.Is ( Value.FromText ( current ), Int64.Type ) 
+				                then state & [ D = state[D] & { current } ]
+				                else state & [ A = state[A] & { current } ]
+				        ),
+				    Result = 
+				        Table.FromColumns (
+				            { Separate[A] } & { Separate[D] },
+				            type table [ Alpha = text, Number = Int64.Type ]
+				        )
 				in
 				    Result
 				```
