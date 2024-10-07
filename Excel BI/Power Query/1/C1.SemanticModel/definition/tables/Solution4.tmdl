@@ -1,0 +1,67 @@
+table Solution4
+	lineageTag: 090f5e73-9d6a-41ce-ba5a-448391338625
+
+	column String
+		dataType: string
+		lineageTag: b52b243f-b299-4da4-8b6a-b8c64756c645
+		summarizeBy: none
+		sourceColumn: String
+
+		annotation SummarizationSetBy = Automatic
+
+	column Digits
+		dataType: int64
+		formatString: 0
+		lineageTag: c0805ebf-093b-4eae-89fe-dcb2ae7e775f
+		summarizeBy: sum
+		sourceColumn: Digits
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sum of Digits'
+		dataType: int64
+		formatString: 0
+		lineageTag: 3fb62a07-0632-438f-9c45-e25d08028655
+		summarizeBy: sum
+		sourceColumn: Sum of Digits
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution4 = m
+		mode: import
+		source = ```
+				let
+				    Source = 
+				        RawData,
+				    Transformation = 
+				        Table.TransformRows (
+				            RawData,
+				            ( row ) as record =>
+				                [
+				                    String        = row[String],
+				                    DigitsList    = List.Intersect ( { Text.ToList ( String ), { "0" .. "9" } } ),
+				                    Digits        = Number.From ( Text.Combine ( DigitsList ) ),
+				                    Sum of Digits = List.Sum ( List.Transform ( DigitsList, Number.From ) )
+				                ][
+				                    [String],
+				                    [Digits], 
+				                    [Sum of Digits]
+				                ]
+				        ),
+				    ChangedTypes = 
+				        Table.FromRecords (
+				            Transformation,
+				            type table [ 
+				                String = text, 
+				                Digits = Int64.Type, 
+				                Sum of Digits = Int64.Type 
+				            ]
+				        )
+				in
+				    ChangedTypes
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

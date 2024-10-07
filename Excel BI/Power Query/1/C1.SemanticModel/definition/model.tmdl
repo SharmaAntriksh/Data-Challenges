@@ -8,13 +8,16 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
-annotation PBIDesktopVersion = 2.128.1177.0 (24.04)
+annotation PBIDesktopVersion = 2.132.1053.0 (24.08)
 
-annotation PBI_QueryOrder = ["RawData","Solution1","Solution2","Solution3"]
+annotation PBI_QueryOrder = ["RawData","Solution1","Solution2","Solution3","Solution4"]
 
 annotation PBI_ProTooling = ["DevMode"]
 
 ref table Solution1
 ref table Solution2
 ref table Solution3
+ref table Solution4
+
+ref cultureInfo en-US
 
