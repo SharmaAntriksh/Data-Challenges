@@ -43,15 +43,41 @@ table Solution1
 
 	partition Solution1 = m
 		mode: import
-		source =
+		source = ```
 				let
-				    Source = Raw,
-				    DistinctSort = List.Sort ( List.Distinct ( Source[Alphabets] ) ),
-				    Transformation = List.Transform ( DistinctSort, each {_} & List.Repeat ( {_}, List.Count ( List.PositionOf ( Source[Alphabets], _, Occurrence.All, Comparer.OrdinalIgnoreCase ) ) ) ),
-				    DataTypes = List.Transform ( DistinctSort, each { _, Value.Type ( _ ) } ),
-				    Result = Table.TransformColumnTypes ( Table.PromoteHeaders ( Table.FromColumns ( Transformation ) ), DataTypes )
+				    Source = 
+				        Raw,
+				    DistinctSort = 
+				        List.Sort ( List.Distinct ( Source[Alphabets] ) ),
+				    Transformation = 
+				        List.Transform (
+				            DistinctSort,
+				            each { _ }
+				                & List.Repeat (
+				                    { _ },
+				                    List.Count (
+				                        List.PositionOf (
+				                            Source[Alphabets],
+				                            _,
+				                            Occurrence.All,
+				                            Comparer.OrdinalIgnoreCase
+				                        )
+				                    )
+				                )
+				        ),
+				    DataTypes = 
+				        List.Transform ( 
+				            DistinctSort, 
+				            each { _, Value.Type ( _ ) } 
+				        ),
+				    Result = 
+				        Table.TransformColumnTypes (
+				            Table.PromoteHeaders ( Table.FromColumns ( Transformation ) ),
+				            DataTypes
+				        )
 				in
 				    Result
+				```
 
 	annotation PBI_NavigationStepName = Navigation
 
