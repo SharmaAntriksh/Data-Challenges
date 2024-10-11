@@ -1,0 +1,12 @@
+expression Raw =
+		let
+		    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("XZBBa8MwDIX/SvC5VizZiu3ryi5jp+1YckhpoYPSQLoy9u+nxrLX7WT7+eM96e12Bp1DszEv8+kihxsssqW7gggZzbhZERLh9eP83b/frtMKRou5gInB5wp6EZ4PX9NyuENsHSoUgBsU1K0glBRxQA1hEdasru+2p2k5H69ye5r3Jdurbfbg25CDCMr+DQ8E3Kj4sC1b1PCQ6n+Sl+YMzSHSw45ZhLd5f1w+u/53V4FjgSmCq3bo6iJlcFJDzjBQZbD0MWkfXvtIgFwR+tcraflRym9Zvg2mYQoxQjDj+AM=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Order No." = _t, Name = _t, Date = _t, Amount = _t]),
+		    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Date", type date}, {"Amount", Currency.Type}, {"Order No.", Int64.Type}})
+		in
+		    #"Changed Type"
+	lineageTag: 2ae72cd8-515a-4fb6-9651-6c2be3d4d4f2
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

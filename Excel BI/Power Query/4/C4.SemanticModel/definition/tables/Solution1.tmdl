@@ -1,0 +1,93 @@
+table Solution1
+	lineageTag: 92ff79dd-ef38-45c9-824b-3d1fdbffd87b
+
+	column Names
+		dataType: string
+		lineageTag: 5cd2398c-17a4-46d2-9e59-4342db3f3610
+		summarizeBy: none
+		sourceColumn: Names
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order Numbers'
+		dataType: string
+		lineageTag: 08b28bc7-f9dd-4736-a119-e90b2b647e9e
+		summarizeBy: none
+		sourceColumn: Order Numbers
+
+		annotation SummarizationSetBy = Automatic
+
+	column May
+		dataType: double
+		lineageTag: c804c1e9-35e7-4af8-a4a6-4a228480af35
+		summarizeBy: sum
+		sourceColumn: May
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column June
+		dataType: double
+		lineageTag: bacd3986-9926-4fa6-b911-5fc7a9ad8157
+		summarizeBy: sum
+		sourceColumn: June
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column July
+		dataType: double
+		lineageTag: 1da57d94-1edc-4c6f-956b-55eff5ec5d9e
+		summarizeBy: sum
+		sourceColumn: July
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Total
+		dataType: double
+		lineageTag: fe0a147c-03da-4c34-859c-8f5c9841c67c
+		summarizeBy: sum
+		sourceColumn: Total
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition Solution1 = m
+		mode: import
+		source = ```
+				let
+				    Source = Raw,
+				    SplitNames = Table.AddColumn ( Source, "NamesAmount Corrected", each [Names = List.Transform ( Text.SplitAny ( [Name], "/" ), (x) => Text.Trim ( x ) ), AmountCorrected = Number.Round ( Value.Divide ( [Amount], List.Count ( Names ) ), 2 ) ], type record ),
+				    ExpandedNamesAmountCorrected = Table.ExpandRecordColumn(SplitNames, "NamesAmount Corrected", {"Names", "AmountCorrected"}, {"Names", "AmountCorrected"}),
+				    ExpandedNames = Table.ExpandListColumn(ExpandedNamesAmountCorrected, "Names"),
+				    RemovedColumns = Table.RemoveColumns(ExpandedNames,{"Name", "Amount"}),
+				    GroupedRows = Table.Group(RemovedColumns, {"Names"}, {{"Transformation", each 
+				let 
+				T = _,
+				RemoveCols = Table.RemoveColumns ( T, { "Names", "Order No." } ),
+				OrdersConcatenated = Text.Combine ( List.Transform ( T[#"Order No."], Text.From ), ", " ),
+				SortMonths = Table.Sort ( RemoveCols, { { "Date", Order.Ascending }}),
+				ExtractMonths = Table.TransformColumns ( SortMonths, { { "Date", Date.MonthName }}),
+				Group = Table.Group ( ExtractMonths, {"Date"}, {{ "Amount", each List.Sum ( _[AmountCorrected] )}}),
+				RowTotal = List.Sum ( Group[Amount] ),
+				Combined = { {"Order Numbers", OrdersConcatenated}} & Table.ToRows ( Group ) & {{"Total", RowTotal}},
+				Result = Table.PromoteHeaders ( Table.FromColumns ( Combined ) )
+				in
+				Result, type table
+				}}),
+				    ExpandedTransformation = Table.ExpandTableColumn(GroupedRows, "Transformation", {"Order Numbers", "May", "June", "July", "Total"}, {"Order Numbers", "May", "June", "July", "Total"}),
+				    ChangedType = Table.TransformColumnTypes(ExpandedTransformation,{{"Names", type text}, {"Order Numbers", type text}, {"May", type number}, {"June", type number}, {"July", type number}, {"Total", type number}}),
+				    SortedRows = Table.Sort(ChangedType,{{"Names", Order.Ascending}})
+				in
+				    SortedRows
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
