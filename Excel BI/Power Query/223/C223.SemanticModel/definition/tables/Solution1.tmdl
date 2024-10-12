@@ -1,0 +1,107 @@
+table Solution1
+	lineageTag: d249ef45-cde5-4023-9f0f-97d091b07811
+
+	column Group
+		dataType: string
+		lineageTag: c9dfa763-4dff-4432-8e7d-3fb243f85909
+		summarizeBy: none
+		sourceColumn: Group
+
+		annotation SummarizationSetBy = Automatic
+
+	column Code1
+		dataType: string
+		lineageTag: 1e559d57-bb02-4589-99b3-1e35defb4cdd
+		summarizeBy: none
+		sourceColumn: Code1
+
+		annotation SummarizationSetBy = Automatic
+
+	column Code2
+		dataType: string
+		lineageTag: bf07df27-b5b7-472d-83cd-9ba60c62158f
+		summarizeBy: none
+		sourceColumn: Code2
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value1
+		dataType: string
+		lineageTag: cf538711-aa31-42bf-842d-c6e8e89043f7
+		summarizeBy: none
+		sourceColumn: Value1
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value2
+		dataType: string
+		lineageTag: 48919e54-8d5c-4443-aa4f-9f68085e7850
+		summarizeBy: none
+		sourceColumn: Value2
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution1 = m
+		mode: import
+		source = ```
+				let
+				    Source = Raw,
+				    MergedColumns = 
+				        Table.CombineColumns (
+				            Source,
+				            { "Type", "Code" },
+				            Combiner.CombineTextByDelimiter ( "", QuoteStyle.None ),
+				            "Code"
+				        ),
+				    GroupedRows = 
+				        Table.Group (
+				            MergedColumns,
+				            { "Group" },
+				            {
+				                {
+				                    "Transformation",
+				                    each
+				                        let
+				                            T = _,
+				                            Split = 
+				                                Table.Split ( T, 2 ),
+				                            Transform = 
+				                                List.Transform (
+				                                    Split,
+				                                    ( t ) =>
+				                                        let
+				                                            code = t[Code],
+				                                            codeColumnName = 
+				                                                List.Transform (
+				                                                    { 1 .. List.Count ( code ) },
+				                                                    each "Code" & Text.From ( _ )
+				                                                ),
+				                                            value = t[Value],
+				                                            valueColumnName = 
+				                                                List.Transform (
+				                                                    { 1 .. List.Count ( value ) },
+				                                                    each "Value" & Text.From ( _ )
+				                                                ),
+				                                            Result = 
+				                                                Table.FromRows (
+				                                                    { { _[Group]{0} } & t[Code] & t[Value] },
+				                                                    { "Group" } & codeColumnName & valueColumnName
+				                                                )
+				                                        in
+				                                            Result
+				                                )
+				                        in
+				                            Table.Combine ( Transform )
+				                }
+				            }
+				        )[Transformation],
+				    Combined = 
+				        Table.Combine ( GroupedRows )
+				in
+				    Combined
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

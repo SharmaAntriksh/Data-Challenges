@@ -1,0 +1,11 @@
+expression Raw =
+		let
+		    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("Vc4xDsMgDAXQu3hmCBAl8UhCCUq6tKrUIeL+16g/qEZZvuSnb8N1USBDYZUYrISdqJiGMQGdBNuK663pveIW/82xN+MD6HGzN/cMZCArvj/AEeu9GTaU6s2hIua042E0uWM+JBwe4lkxPNsXDU2s+PpKLFh3TvE4Mdt2uJQf", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Group = _t, Type = _t, Code = _t, Value = _t])
+		in
+		    Source
+	lineageTag: e12fa4cb-4ee5-4214-a486-4ff1c8bb6a89
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
