@@ -1,0 +1,79 @@
+table Solution2
+	lineageTag: 16bcadac-bac7-430c-8f15-72b912bb3120
+
+	column 'Order Numbers'
+		dataType: string
+		lineageTag: e6f197d2-f723-43cc-98b8-768c6f4ab5b6
+		summarizeBy: none
+		sourceColumn: Order Numbers
+
+		annotation SummarizationSetBy = Automatic
+
+	column May
+		dataType: string
+		lineageTag: dc5c15cd-dbc5-4b95-a3aa-0ac4209c54e1
+		summarizeBy: none
+		sourceColumn: May
+
+		annotation SummarizationSetBy = Automatic
+
+	column June
+		dataType: string
+		lineageTag: 661ea272-a4f0-4fd0-bf00-ee7aa41c7938
+		summarizeBy: none
+		sourceColumn: June
+
+		annotation SummarizationSetBy = Automatic
+
+	column July
+		dataType: string
+		lineageTag: 7c8a01fe-2b26-422e-9b29-312f43e6510b
+		summarizeBy: none
+		sourceColumn: July
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total
+		dataType: string
+		lineageTag: 078eeda1-78b5-4418-a9d6-b4de6582d9bf
+		summarizeBy: none
+		sourceColumn: Total
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution2 = m
+		mode: import
+		source = ```
+				let
+				    Source = Raw,
+				    Transformation = Table.TransformRows ( Source, each let row = _, SplitNames = [Names = List.Transform ( Text.Split ( row[Name], "/" ), Text.Trim )], AmountCorrected = [Amount = Number.Round ( Value.Divide ( row[Amount], List.Count ( SplitNames[Names] ) ), 2 )] in row & SplitNames  & AmountCorrected ),
+				    ToTable = Table.FromRecords ( Transformation ),
+				    ExpandedNameList = Table.RemoveColumns ( Table.ExpandListColumn ( ToTable, "Names" ), { "Name" } ),
+				    DistinctSortedNames = List.Sort ( List.Distinct ( ExpandedNameList[Names] ), Order.Ascending ),
+				    ListTransformation = List.Transform ( 
+				DistinctSortedNames, 
+				(n) => let
+				T = Table.SelectRows ( ExpandedNameList, each [Names] = n ),
+				Sort = Table.Sort ( T, { {"Date", Order.Ascending } } ),
+				OrderNumbers = Text.Combine ( List.Transform ( Sort[#"Order No."], Text.From ), ", " ),
+				DateToMonths = Table.TransformColumns ( Sort, { { "Date", Date.MonthName } } ),
+				RemoveOrder = Table.RemoveColumns ( DateToMonths, {"Order No." } ),
+				Group = Table.Group ( RemoveOrder, {"Date"}, {{"Amount", each List.Sum ([Amount])}}),
+				MonthsToRows = Table.ToRows ( Group ),
+				Combined = {{"Order Numbers", OrderNumbers}} & MonthsToRows,
+				Result = Table.PromoteHeaders ( Table.FromColumns ( Combined ) )
+				in
+				Result
+				),
+				    Result = Table.AddColumn ( Table.Combine ( ListTransformation ), "Total", each List.Sum ( Record.ToList ( Record.RemoveFields ( _, "Order Numbers" ) ) ) ),
+				    SortList = {"Order Numbers" } & List.Transform ( {1..12}, (d) => Date.MonthName ( Date.FromText ( Text.From ( d ) & "-2024" ) ) ) & { "Total" },
+				    ColumnNameOrder = List.Sort ( Table.ColumnNames ( Result ), each List.PositionOf ( SortList, _ ) ),
+				    Ordered = Table.ReorderColumns ( Result, ColumnNameOrder )
+				in
+				    Ordered
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,46 @@
+table Solution3
+	lineageTag: 3358561f-d4ed-4d1a-9611-d7dacbe0b43e
+
+	column Column1
+		dataType: string
+		lineageTag: 7066eef8-9665-4044-aa59-7b2630fe5d1b
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	column Column2
+		dataType: string
+		lineageTag: 3a2d3c2a-b667-4439-b653-3947e14b5182
+		summarizeBy: none
+		sourceColumn: Column2
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution3 = m
+		mode: import
+		source = ```
+				let
+				    Source = Raw,
+				    DistinctGroups = 
+				        List.Distinct ( Source[Group] ),
+				    Transformation = 
+				        List.Accumulate (
+				            DistinctGroups,
+				            #table ( type table [ Column1 = text, Column2 = text ], {} ),
+				            ( Seed, Current ) =>
+				                let
+				                    T         = Table.SelectRows ( Source, each [Group] = Current ),
+				                    EmpIDName = Table.ToRows ( T[[Emp ID], [Name]] ),
+				                    Result    = Table.FromRows ( { { T[Group]{0}, T[Dept]{0} } } & EmpIDName )
+				                in
+				                    Seed & Result
+				        )
+				in
+				    Transformation
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

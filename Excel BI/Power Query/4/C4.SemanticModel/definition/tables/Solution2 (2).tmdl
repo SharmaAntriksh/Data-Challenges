@@ -1,0 +1,92 @@
+table 'Solution2 (2)'
+	lineageTag: 4aac04fb-ef2b-49e5-a004-30c8c4ab2985
+
+	column 'Order Numbers'
+		dataType: string
+		lineageTag: 61530056-876a-476b-9ae6-a0460425078b
+		summarizeBy: none
+		sourceColumn: Order Numbers
+
+		annotation SummarizationSetBy = Automatic
+
+	column June
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		lineageTag: e88f7bd1-b578-4749-8de8-5c48f844b929
+		summarizeBy: sum
+		sourceColumn: June
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column July
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		lineageTag: 51f980f9-b208-4523-b255-fa6c76d1a1c4
+		summarizeBy: sum
+		sourceColumn: July
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column May
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		lineageTag: 702b27d6-783e-48bb-893e-f9005d4a54bf
+		summarizeBy: sum
+		sourceColumn: May
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column Custom
+		dataType: decimal
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		lineageTag: fa1aeef0-37f2-4271-a9b8-7e347b40743f
+		summarizeBy: sum
+		sourceColumn: Custom
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	partition 'Solution2 (2)' = m
+		mode: import
+		source = ```
+				let
+				    Source = Raw,
+				    Transformation = Table.TransformRows ( Source, each let row = _, SplitNames = [Names = List.Transform ( Text.Split ( row[Name], "/" ), Text.Trim )], AmountCorrected = [Amount = Number.Round ( Value.Divide ( row[Amount], List.Count ( SplitNames[Names] ) ), 2 )] in row & SplitNames  & AmountCorrected ),
+				    ToTable = Table.FromRecords ( Transformation ),
+				    ExpandedNameList = Table.RemoveColumns ( Table.ExpandListColumn ( ToTable, "Names" ), { "Name" } ),
+				    DistinctSortedNames = List.Sort ( List.Distinct ( ExpandedNameList[Names] ), Order.Ascending ),
+				    ListTransformation = List.Transform ( 
+				DistinctSortedNames, 
+				(n) => let
+				T = Table.SelectRows ( ExpandedNameList, each [Names] = n ),
+				Sort = Table.Sort ( T, { {"Date", Order.Ascending } } ),
+				OrderNumbers = Text.Combine ( List.Transform ( Sort[#"Order No."], Text.From ), ", " ),
+				DateToMonths = Table.TransformColumns ( Sort, { { "Date", Date.MonthName } } ),
+				RemoveOrder = Table.RemoveColumns ( DateToMonths, {"Order No." } ),
+				Group = Table.Group ( RemoveOrder, {"Date"}, {{"Amount", each List.Sum ([Amount])}}),
+				MonthsToRows = Table.ToRows ( Group ),
+				Combined = {{"Order Numbers", OrderNumbers}} & MonthsToRows,
+				Result = Table.PromoteHeaders ( Table.FromColumns ( Combined ) )
+				in
+				Result
+				),
+				    Result = Table.Combine ( ListTransformation ),
+				    ChangedType = Table.TransformColumnTypes(Result,{{"Order Numbers", type text}, {"June", type number}, {"July", type number}, {"May", type number}}),
+				    Custom1 = ChangedType,
+				    #"Added Custom" = Table.AddColumn(Custom1, "Custom", each List.Sum ( List.Skip ( Record.ToList ( _ ) ) ) ),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom",{{"Custom", Currency.Type}, {"May", Currency.Type}, {"July", Currency.Type}, {"June", Currency.Type}})
+				in
+				    #"Changed Type"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

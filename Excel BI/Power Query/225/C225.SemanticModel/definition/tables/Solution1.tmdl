@@ -1,0 +1,58 @@
+table Solution1
+	lineageTag: 90f447fe-e903-4076-9306-2e55a14e0a37
+
+	column Column1
+		dataType: string
+		lineageTag: bab2dbf5-0a17-4d31-8c53-2971a4d933d6
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	column Column2
+		dataType: string
+		lineageTag: cb9d6865-8df7-4eb1-b600-f1eb252bb9ab
+		summarizeBy: none
+		sourceColumn: Column2
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Solution1 = m
+		mode: import
+		source = ```
+				let
+				    Source = Raw,
+				    GroupedRows = 
+				        Table.Group (
+				            Source,
+				            { "Group" },
+				            {
+				                {
+				                    "Transformation",
+				                    each
+				                        let
+				                            T         = _,
+				                            EmpIDName = Table.ToRows ( T[[Emp ID], [Name]] ),
+				                            Result    = Table.FromRows ( { { T[Group]{0}, T[Dept]{0} } } & EmpIDName )
+				                        in
+				                            Result
+				                }
+				            }
+				        ),
+				    RemovedColumns = 
+				        Table.RemoveColumns ( GroupedRows, { "Group" } ),
+				    ExpandedTransformation = 
+				        Table.ExpandTableColumn (
+				            RemovedColumns,
+				            "Transformation",
+				            { "Column1", "Column2" },
+				            { "Column1", "Column2" }
+				        )
+				in
+				    ExpandedTransformation
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

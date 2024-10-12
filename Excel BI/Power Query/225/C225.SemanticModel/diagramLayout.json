@@ -14,9 +14,9 @@
             "y": 0
           },
           "nodeIndex": "Solution1",
-          "nodeLineageTag": "92ff79dd-ef38-45c9-824b-3d1fdbffd87b",
+          "nodeLineageTag": "90f447fe-e903-4076-9306-2e55a14e0a37",
           "size": {
-            "height": 224,
+            "height": 128,
             "width": 234
           },
           "zIndex": 0
@@ -24,12 +24,12 @@
         {
           "location": {
             "x": 284,
-            "y": 60
+            "y": 0
           },
           "nodeIndex": "Solution2",
-          "nodeLineageTag": "16bcadac-bac7-430c-8f15-72b912bb3120",
+          "nodeLineageTag": "d6c8fb9e-baab-4b81-8aa0-3ef718e86292",
           "size": {
-            "height": 104,
+            "height": 128,
             "width": 234
           },
           "zIndex": 0
@@ -39,23 +39,10 @@
             "x": 568,
             "y": 0
           },
-          "nodeIndex": "Query1",
-          "nodeLineageTag": "5d9e5d67-711a-404a-8599-6a5ea96e306a",
+          "nodeIndex": "Solution3",
+          "nodeLineageTag": "3358561f-d4ed-4d1a-9611-d7dacbe0b43e",
           "size": {
-            "height": 224,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 852,
-            "y": 12
-          },
-          "nodeIndex": "Solution2 (2)",
-          "nodeLineageTag": "4aac04fb-ef2b-49e5-a004-30c8c4ab2985",
-          "size": {
-            "height": 200,
+            "height": 128,
             "width": 234
           },
           "zIndex": 0

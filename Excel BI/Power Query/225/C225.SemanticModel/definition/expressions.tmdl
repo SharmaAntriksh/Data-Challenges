@@ -1,0 +1,11 @@
+expression Raw =
+		let
+		    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMlTSUXIE4uDEnNRiIO1elF9aoOCoFKsTrWQE5DvhkDMG8p1xyJkA+S5AHFBalJyRWJyZlw5X4ARWYArku+JTYAbkuwGxRxBcwhksYQ7iY5OwAAliSMQCAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Emp ID" = _t, Name = _t, Dept = _t, Group = _t])
+		in
+		    Source
+	lineageTag: f8fda7d3-7af9-4238-af53-4f1f70192a4e
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,71 @@
+table Query1
+	lineageTag: 5d9e5d67-711a-404a-8599-6a5ea96e306a
+
+	column Name
+		dataType: string
+		lineageTag: e894f62f-f4fd-49e2-98f8-f6fbd908347f
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Orders
+		dataType: string
+		lineageTag: 2a162053-96f7-45c4-ab50-582e7b3035b0
+		summarizeBy: none
+		sourceColumn: Orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column May
+		dataType: string
+		lineageTag: 1f97a5fd-b292-447d-9795-62924ba6313d
+		summarizeBy: none
+		sourceColumn: May
+
+		annotation SummarizationSetBy = Automatic
+
+	column Jun
+		dataType: string
+		lineageTag: 1f3cb076-51f2-4179-a746-7a29802af05f
+		summarizeBy: none
+		sourceColumn: Jun
+
+		annotation SummarizationSetBy = Automatic
+
+	column Jul
+		dataType: string
+		lineageTag: 7d92b946-6e56-482b-9a25-3020e1d1968b
+		summarizeBy: none
+		sourceColumn: Jul
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total
+		dataType: string
+		lineageTag: 12f11c8d-d634-4d9b-8c50-7ad29140e879
+		summarizeBy: none
+		sourceColumn: Total
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Query1 = m
+		mode: import
+		source =
+				let
+				 Source = Raw,
+				 SplitTrim = Table.TransformColumns(Source,{{"Name", each List.Transform(Text.Split(_,"/"),Text.Trim) }}),
+				 AAm = Table.AddColumn(SplitTrim, "Am", each [Amount]/List.Count([Name])),
+				 EName = Table.ExpandListColumn(AAm, "Name"),
+				 Grouped = Table.Group(EName, "Name", {{"Orders", each Text.Combine(List.Transform(List.Sort([#"Order No."]),Text.From),",")},{"A", each _ }}),
+				 ExpandedA = Table.ExpandTableColumn(Grouped, "A", {"Date", "Am"}, {"Date", "Am"}),
+				 AMonth = Table.TransformColumns(Table.Sort(ExpandedA,{{"Date", Order.Ascending}}),{{"Date", each Date.ToText(_,"MMM")}}),
+				 Pivoted = Table.Pivot(AMonth, List.Distinct(AMonth[Date]), "Date", "Am", each Number.Round(List.Sum(_),2)),
+				 ATotal = Table.AddColumn(Pivoted, "Total", each List.Sum(List.RemoveFirstN(Record.ToList(_),2)))
+				in
+				 ATotal
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

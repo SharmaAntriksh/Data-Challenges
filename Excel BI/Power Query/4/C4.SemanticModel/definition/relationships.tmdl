@@ -1,0 +1,6 @@
+relationship AutoDetected_1a6de7d5-17ba-4682-a00e-6f4cf22a920f
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'Solution2 (2)'.'Order Numbers'
+	toColumn: Solution2.'Order Numbers'
+
